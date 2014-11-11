@@ -10,7 +10,7 @@ self = (typeof window !== 'undefined')
 
 var OrgJS = (function () {
     var _ = self.OrgJS = {
- 
+
         orgRegex: function () {
             // e.g: #+TITLE: Example title
             var inbufferOptionsRegex = /[ \t]*#\+(\w+): (.*)/;
@@ -211,4 +211,6 @@ var OrgJS = (function () {
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = OrgJS;
 }
-
+else if (typeof window !== 'undefined') {
+    window.OrgJS = OrgJS;
+}
