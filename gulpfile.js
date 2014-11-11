@@ -1,18 +1,32 @@
 var gulp = require('gulp'),
-    watch = require('gulp-watch'),
-    karmaServer = require('karma').server,
-    karma = require('gulp-karma');
+    karma = require('karma').server,
+    path = require('path'),
+    karmaParseConfig = require('karma/lib/config').parseConfig;
 
-gulp.task('test', function (done) {
-    karmaServer.start({
-        configFile: __dirname + '/karma.conf.js',
+function runKarma(configFilePath, options, cb) {
+    configFilePath = path.resolve(configFilePath);
+    var config = karmaParseConfig(configFilePath, {});
+    Object.keys(options).forEach(function (key) {
+        config[key] = options[key];
+    });
+    karma.start(config, function (exitCode) {
+        cb();
+        process.exit(exitCode);
+    });
+}
+
+/** single run */
+gulp.task('test', function(cb) {
+    runKarma('karma.conf.js', {
+        autoWatch: false,
         singleRun: true
-    }, done);
+    }, cb);
 });
 
-gulp.task('watch', function () {
-    gulp.src( ['gulpfile.js', 'tests/**/*.spec']).pipe(karma({
-        configFile: __dirname + '/karma.conf.js',
-        action: 'watch'
-    }))
+/** continuous ... using karma to watch (feel free to circumvent that;) */
+gulp.task('watch', function(cb) {
+    runKarma('karma.conf.js', {
+        autoWatch: true,
+        singleRun: false
+    }, cb);
 });

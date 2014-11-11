@@ -1,3 +1,5 @@
+/*global WorkerGlobalScope*/
+
 self = (typeof window !== 'undefined')
     ? window   // if in browser
     : (
@@ -8,7 +10,7 @@ self = (typeof window !== 'undefined')
 
 var OrgJS = (function () {
     var _ = self.OrgJS = {
-
+ 
         orgRegex: function () {
             // e.g: #+TITLE: Example title
             var inbufferOptionsRegex = /[ \t]*#\+(\w+): (.*)/;
