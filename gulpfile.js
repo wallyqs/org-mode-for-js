@@ -1,32 +1,77 @@
 var gulp = require('gulp'),
-    karma = require('karma').server,
+    karma = require('gulp-karma')({configFile: 'karma.conf.js'});
     path = require('path'),
+    glob = require('glob'),
+    watch = require('gulp-watch'),
+    browserify = require('browserify'),
+    source = require('vinyl-source-stream'),
+    runSequence = require('run-sequence'),
     karmaParseConfig = require('karma/lib/config').parseConfig;
 
-function runKarma(configFilePath, options, cb) {
-    configFilePath = path.resolve(configFilePath);
-    var config = karmaParseConfig(configFilePath, {});
-    Object.keys(options).forEach(function (key) {
-        config[key] = options[key];
-    });
+var karmaConf = 'karma.conf.js';
+
+function runKarma(configFilePath, options) {
+
     karma.start(config, function (exitCode) {
-        cb();
         process.exit(exitCode);
     });
 }
 
-/** single run */
-gulp.task('test', function(cb) {
-    runKarma('karma.conf.js', {
+gulp.task('test-bundle', function (cb) {
+    var testFiles = glob.sync('./tests/**/*.spec.js');  // Bundle all our tests.
+    browserify(testFiles, {debug: true})
+        .bundle()
+        .pipe(source('tests.js'))
+        .pipe(gulp.dest('build/').on('finish', cb));
+});
+
+gulp.task('karma', function (cb) {
+    runKarma(karmaConf, {
         autoWatch: false,
         singleRun: true
     }, cb);
 });
 
-/** continuous ... using karma to watch (feel free to circumvent that;) */
-gulp.task('watch', function(cb) {
-    runKarma('karma.conf.js', {
+/** single run */
+gulp.task('test', function (cb) {
+    runSequence(
+        'test-bundle',
+        'karma',
+        cb
+    );
+});
+
+gulp.task('fuck-knows',function (){
+    var configFilePath = path.resolve(karmaConf);
+    var config = karmaParseConfig(configFilePath, {});
+    var options = {
         autoWatch: true,
         singleRun: false
-    }, cb);
+    };
+    Object.keys(options).forEach(function (key) {
+        config[key] = options[key];
+    });
+    karma.start(config).then(karma.run);
+});
+
+gulp.task('watch', function () {
+    var files = './tests/**/*.spec.js';
+    runSequence(
+        'test-bundle',
+        'fuck-knows',
+        function (){
+            gulp.watch(files, function() {
+                karma.run();
+            });
+        }
+    );
+
+    //gulp.src(files)
+    //    .pipe(watch(files, function () {
+    //        runSequence(
+    //            'test-bundle',
+    //            'karma',
+    //            cb
+    //        );
+    //    }));
 });
