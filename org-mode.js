@@ -119,7 +119,7 @@ var OrgJS = (function() {
                     // at this point, most likely we are dealing with a paragraph
                     return {
                         type: 'paragraph',
-                        rawContent: line
+                        rawContent: line + "\n"
                     };
                     break;
 
@@ -244,7 +244,6 @@ var OrgJS = (function() {
                                 currentOrgNode.rawContent += "\n";
                                 break;
                             default:
-
                                 break;
                         }
                         break;
@@ -257,7 +256,7 @@ var OrgJS = (function() {
 
                                 // in case currently it is a paragraph: append the contents
                                 if (currentOrgNode.type == 'paragraph') {
-                                    currentOrgNode.rawContent += nextOrgElement.rawContent + "\n";
+                                    currentOrgNode.rawContent += nextOrgElement.rawContent;
                                 } else {
                                     currentOrgNode = _.intoElement(nextOrgElement, currentOrgNode);
                                 }
